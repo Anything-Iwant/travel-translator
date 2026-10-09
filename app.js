@@ -1,7 +1,104 @@
 const $=id=>document.getElementById(id);
 const src=$("sourceLang"),dst=$("targetLang"),input=$("recognized"),output=$("translated");
-let installPrompt=null;
-const installBtn=$("installBtn"),help=$("installHelp"),error=$("error"),status=$("status");
+let installPrompt = null;
+let installEventSeen = false;
+const installBtn = $("installBtn"), help = $("installHelp"), error = $("error"), status = $("status");
+
+function isInstalledApp() {
+  return window.matchMedia("(display-mode: standalone)").matches ||
+    window.matchMedia("(display-mode: window-controls-overlay)").matches ||
+    navigator.standalone === true;
+}
+function isDesktopDevice() {
+  return !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+function desktopInstallHelp() {
+  const ua = navigator.userAgent;
+  if (/Edg\//i.test(ua)) {
+    return "브라우저가 자동 설치 창을 제공하지 않았어요. Edge 주소창 오른쪽의 설치 아이콘을 확인하거나, ⋯ → 앱 → 이 사이트를 앱으로 설치를 선택해 주세요.";
+  }
+  if (/Chrome\//i.test(ua) && !/Edg\//i.test(ua)) {
+    return "브라우저가 자동 설치 창을 제공하지 않았어요. Chrome 주소창 오른쪽의 설치 아이콘을 확인하거나, ⋮ → 전송, 저장 및 공유 → 페이지를 앱으로 설치를 선택해 주세요.";
+  }
+  if (/Safari/i.test(ua) && /Macintosh|Mac OS X/i.test(ua)) {
+    return "Safari에서는 웹사이트가 설치 창을 자동으로 열 수 없어요. 메뉴 막대에서 파일 → Dock에 추가를 선택하거나 Chrome/Edge를 이용해 주세요.";
+  }
+  if (/Firefox\//i.test(ua)) {
+    return "이 브라우저는 앱 설치 팝업을 지원하지 않을 수 있어요. PC의 Chrome 또는 Edge에서 페이지를 열어 설치해 주세요.";
+  }
+  return "PC의 Chrome 또는 Edge에서 설치할 수 있어요. 주소창 오른쪽의 설치 아이콘이나 브라우저 메뉴의 앱 설치 항목을 확인해 주세요.";
+}
+function showInstallHelp() {
+  if (isInstalledApp()) {
+    help.textContent = "이미 앱으로 설치되어 있어요. 바탕화면 또는 시작 메뉴의 '여행 번역기' 아이콘으로 실행할 수 있습니다.";
+    return;
+  }
+  if (/; wv\)|\bwv\b|NAVER\(inapp|Naver.*InApp/i.test(navigator.userAgent)) {
+    help.textContent = "현재 앱 안의 브라우저에서는 설치가 제한될 수 있어요. 메뉴에서 'Chrome에서 열기'를 선택한 뒤 설치 버튼을 다시 눌러 주세요.";
+    return;
+  }
+  help.textContent = isDesktopDevice()
+    ? desktopInstallHelp()
+    : "휴대전화 브라우저에서 설치 팝업이 지원되면 이 버튼으로 열 수 있어요. 팝업이 나타나지 않으면 브라우저 메뉴에서 '홈 화면에 추가' 또는 '앱 설치'를 선택해 주세요.";
+}
+
+// Chromium 브라우저가 설치 팝업을 허용하면 이벤트를 저장하고,
+// 사용자가 설치 버튼을 누른 바로 그 순간 prompt()를 호출합니다.
+window.addEventListener("beforeinstallprompt", event => {
+  if (isInstalledApp()) return;
+  event.preventDefault();
+  installPrompt = event;
+  installEventSeen = true;
+  installBtn.disabled = false;
+  installBtn.textContent = "＋ 바탕화면 설치";
+  help.textContent = "설치할 수 있어요. '바탕화면 설치'를 누르면 브라우저 설치 창이 열립니다.";
+});
+window.addEventListener("appinstalled", () => {
+  installPrompt = null;
+  help.textContent = "설치 완료! 바탕화면 또는 앱 목록에서 '여행 번역기'를 실행하세요.";
+  installBtn.textContent = "✓ 설치 완료";
+  installBtn.disabled = true;
+});
+if (isInstalledApp()) {
+  installBtn.textContent = "✓ 앱으로 설치됨";
+  help.textContent = "이미 앱으로 설치되어 있어요. 바탕화면 또는 시작 메뉴의 아이콘으로 실행할 수 있습니다.";
+  installBtn.disabled = true;
+}
+installBtn.addEventListener("click", async () => {
+  error.textContent = "";
+  if (isInstalledApp()) {
+    showInstallHelp();
+    return;
+  }
+  // Prompt can only be shown when the browser has fired beforeinstallprompt.
+  // Calling it synchronously from this click preserves the required user gesture.
+  const promptEvent = installPrompt;
+  if (promptEvent) {
+    installPrompt = null;
+    try {
+      await promptEvent.prompt();
+      const choice = await promptEvent.userChoice;
+      if (choice.outcome === "accepted") {
+        help.textContent = "설치를 진행했어요. 설치가 끝나면 바탕화면 또는 앱 목록에서 아이콘을 확인해 주세요.";
+      } else {
+        help.textContent = "설치가 취소됐어요. 다시 설치하려면 이 버튼을 누르거나 브라우저 메뉴에서 설치해 주세요.";
+      }
+    } catch (err) {
+      showInstallHelp();
+    }
+    return;
+  }
+  if (isDesktopDevice() && !installEventSeen) {
+    help.textContent = "이 브라우저가 아직 자동 설치 창을 제공하지 않았어요. 잠시 후 버튼을 다시 눌러 보세요. 그래도 열리지 않으면 아래 브라우저별 설치 안내를 따라 주세요.";
+    // Keep the actionable browser-specific fallback visible rather than pretending
+    // a website can force an install dialog when the browser has not authorized it.
+    setTimeout(() => {
+      if (!installPrompt && !isInstalledApp()) help.textContent = desktopInstallHelp();
+    }, 1800);
+    return;
+  }
+  showInstallHelp();
+});
 
 // 인터넷 연결 상태: navigator.onLine은 기기의 연결 여부를 알려주지만,
 // 실제 번역 서버 접속 가능 여부까지 보장하지는 않습니다.
