@@ -333,8 +333,110 @@ function languageLabel(code) {
  return names[code] || "선택한 언어";
 }
 $("readBtn").addEventListener("click", speakTranslatedText);
-function addHistory(a,b){const list=$("history");if(list.querySelector(".empty"))list.innerHTML="";const li=document.createElement("li"),one=document.createElement("div"),two=document.createElement("strong");one.textContent=a;two.textContent=b;li.append(one,document.createElement("br"),two);list.prepend(li);while(list.children.length>12)list.lastElementChild.remove();}
-$("clearHistoryBtn").addEventListener("click",()=>{$("history").innerHTML='<li class="empty">번역한 내용이 여기에 쌓입니다.</li>';});
+const HISTORY_STORAGE_KEY = "travelTranslatorHistoryV1";
+const HISTORY_LIMIT = 30;
+
+function readTranslationHistory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || "[]");
+    return Array.isArray(saved) ? saved.filter(item =>
+      item && typeof item.original === "string" &&
+      typeof item.translated === "string"
+    ).slice(0, HISTORY_LIMIT) : [];
+  } catch (e) {
+    return [];
+  }
+}
+let translationHistory = readTranslationHistory();
+
+function persistTranslationHistory() {
+  try {
+    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(translationHistory));
+    return true;
+  } catch (e) {
+    status.textContent = "브라우저 저장이 제한되어 번역 기록을 저장하지 못했습니다.";
+    return false;
+  }
+}
+function addHistory(original, translated) {
+  const entry = {
+    original,
+    translated,
+    from: activeDirection === "inbound" ? dst.value : src.selectedOptions[0]?.dataset.code || src.value,
+    to: activeDirection === "inbound" ? src.selectedOptions[0]?.dataset.code || src.value : dst.value,
+    direction: activeDirection,
+    createdAt: new Date().toISOString()
+  };
+  translationHistory.unshift(entry);
+  translationHistory = translationHistory.slice(0, HISTORY_LIMIT);
+  persistTranslationHistory();
+  renderTranslationHistory();
+}
+function renderTranslationHistory() {
+  const list = $("history");
+  list.innerHTML = "";
+  if (!translationHistory.length) {
+    list.innerHTML = '<li class="empty">번역한 내용이 여기에 쌓입니다.</li>';
+    return;
+  }
+  translationHistory.forEach((entry, index) => {
+    const li = document.createElement("li");
+    li.className = "history-entry";
+    const original = document.createElement("div");
+    original.className = "history-original";
+    original.textContent = entry.original;
+    const translated = document.createElement("div");
+    translated.className = "history-translated";
+    translated.textContent = entry.translated;
+    const meta = document.createElement("div");
+    meta.className = "history-meta";
+    const date = new Date(entry.createdAt);
+    meta.textContent = Number.isNaN(date.getTime()) ? "" : date.toLocaleString();
+    const actions = document.createElement("div");
+    actions.className = "history-actions";
+    const reuse = document.createElement("button");
+    reuse.type = "button";
+    reuse.className = "small-action";
+    reuse.textContent = "다시 사용";
+    reuse.addEventListener("click", () => {
+      input.value = entry.original;
+      output.value = entry.translated;
+      activeDirection = entry.direction === "inbound" ? "inbound" : "outbound";
+      if (entry.direction === "inbound") {
+        const partnerOption = [...dst.options].find(option => option.value === entry.from);
+        const myOption = [...src.options].find(option => option.dataset.code === entry.to);
+        if (partnerOption) dst.value = partnerOption.value;
+        if (myOption) src.value = myOption.value;
+      } else {
+        const myOption = [...src.options].find(option => option.dataset.code === entry.from);
+        if (myOption) src.value = myOption.value;
+        if ([...dst.options].some(option => option.value === entry.to)) dst.value = entry.to;
+      }
+      status.textContent = "이전 번역을 불러왔습니다. 번역읽기 버튼으로 다시 들을 수 있어요.";
+      error.textContent = "";
+      input.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "small-action";
+    remove.textContent = "삭제";
+    remove.addEventListener("click", () => {
+      translationHistory.splice(index, 1);
+      persistTranslationHistory();
+      renderTranslationHistory();
+    });
+    actions.append(reuse, remove);
+    li.append(original, translated, meta, actions);
+    list.appendChild(li);
+  });
+}
+$("clearHistoryBtn").addEventListener("click", () => {
+  if (!translationHistory.length) return;
+  if (typeof window.confirm === "function" && !window.confirm("번역 기록을 모두 삭제할까요?")) return;
+  translationHistory = [];
+  persistTranslationHistory();
+  renderTranslationHistory();
+});
 if(!window.isSecureContext)help.textContent="설치 기능은 HTTPS 주소에서 사용해 주세요.";
 
 
@@ -430,3 +532,4 @@ if (clearFavoritesBtn) {
 
 renderPhrases("hotel");
 renderFavoritePhrases();
+renderTranslationHistory();

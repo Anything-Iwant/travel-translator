@@ -23,3 +23,10 @@
 .favorites-list{grid-template-columns:1fr}
 .empty-favorites{font-size:13px;color:#748293;margin:8px 0 0}
 .empty-favorites[hidden],.small-action[hidden]{display:none}
+
+
+.history-entry{padding:12px 0;border-bottom:1px solid #e5ebf0;list-style:decimal}
+.history-original{font-weight:700;line-height:1.45;overflow-wrap:anywhere}
+.history-translated{margin-top:5px;line-height:1.45;overflow-wrap:anywhere}
+.history-meta{margin-top:6px;font-size:11px;color:#7a8795}
+.history-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
