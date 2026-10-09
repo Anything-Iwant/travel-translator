@@ -197,24 +197,40 @@ const phraseCategoryNames = {
   hotel: "호텔", taxi: "택시", restaurant: "식당", directions: "길 찾기",
   shopping: "쇼핑", airport: "공항", emergency: "긴급 상황"
 };
+let currentPhraseCategory = "hotel";
 function renderPhrases(category) {
+  currentPhraseCategory = category;
   phraseList.innerHTML = "";
   (travelPhrases[category] || []).forEach(([phrase]) => {
+    const row = document.createElement("div");
+    row.className = "phrase-row";
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "phrase-item";
+    button.className = "phrase-item phrase-use";
     button.textContent = phrase;
     button.addEventListener("click", () => {
-      const koreanOption = [...src.options].find(option => option.dataset.code === "ko");
-      if (koreanOption) src.value = koreanOption.value;
-      input.value = phrase;
-      output.value = "";
-      activeDirection = "outbound";
-      error.textContent = "";
-      status.textContent = `여행 회화 선택: ${phrase} — 번역 중입니다.`;
-      translateText("outbound");
+      if (typeof usePhrase === "function") usePhrase(phrase);
+      else {
+        const koreanOption = [...src.options].find(option => option.dataset.code === "ko");
+        if (koreanOption) src.value = koreanOption.value;
+        input.value = phrase;
+        output.value = "";
+        activeDirection = "outbound";
+        error.textContent = "";
+        status.textContent = `여행 회화 선택: ${phrase} — 번역 중입니다.`;
+        translateText("outbound");
+      }
     });
-    phraseList.appendChild(button);
+    const star = document.createElement("button");
+    star.type = "button";
+    star.className = "favorite-toggle";
+    star.textContent = isFavoritePhrase(phrase) ? "★" : "☆";
+    star.title = isFavoritePhrase(phrase) ? "즐겨찾기 해제" : "즐겨찾기에 저장";
+    star.setAttribute("aria-label", `${phrase} ${isFavoritePhrase(phrase) ? "즐겨찾기 해제" : "즐겨찾기에 저장"}`);
+    star.setAttribute("aria-pressed", String(isFavoritePhrase(phrase)));
+    star.addEventListener("click", () => toggleFavoritePhrase(phrase, category));
+    row.append(button, star);
+    phraseList.appendChild(row);
   });
   phraseCategoryButtons.forEach(button => {
     const selected = button.dataset.category === category;
@@ -225,7 +241,6 @@ function renderPhrases(category) {
 phraseCategoryButtons.forEach(button => {
   button.addEventListener("click", () => renderPhrases(button.dataset.category));
 });
-renderPhrases("hotel");
 
 let autoReadEnabled = false;
 const autoReadBtn = $("autoReadBtn");
@@ -321,3 +336,97 @@ $("readBtn").addEventListener("click", speakTranslatedText);
 function addHistory(a,b){const list=$("history");if(list.querySelector(".empty"))list.innerHTML="";const li=document.createElement("li"),one=document.createElement("div"),two=document.createElement("strong");one.textContent=a;two.textContent=b;li.append(one,document.createElement("br"),two);list.prepend(li);while(list.children.length>12)list.lastElementChild.remove();}
 $("clearHistoryBtn").addEventListener("click",()=>{$("history").innerHTML='<li class="empty">번역한 내용이 여기에 쌓입니다.</li>';});
 if(!window.isSecureContext)help.textContent="설치 기능은 HTTPS 주소에서 사용해 주세요.";
+
+
+// 즐겨찾기 회화는 현재 기기의 브라우저에 저장합니다.
+const FAVORITES_STORAGE_KEY = "travelTranslatorFavoritePhrasesV1";
+const favoritePhraseList = $("favoritePhraseList");
+const emptyFavorites = $("emptyFavorites");
+const clearFavoritesBtn = $("clearFavoritesBtn");
+
+function readFavoritePhrases() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(FAVORITES_STORAGE_KEY) || "[]");
+    return Array.isArray(parsed) ? parsed.filter(item =>
+      item && typeof item.text === "string" &&
+      typeof item.category === "string"
+    ) : [];
+  } catch (e) {
+    return [];
+  }
+}
+let favoritePhrases = readFavoritePhrases();
+
+function saveFavoritePhrases() {
+  try {
+    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favoritePhrases));
+    return true;
+  } catch (e) {
+    status.textContent = "브라우저 저장이 제한되어 즐겨찾기를 저장하지 못했습니다.";
+    return false;
+  }
+}
+function isFavoritePhrase(text) {
+  return favoritePhrases.some(item => item.text === text);
+}
+function toggleFavoritePhrase(text, category) {
+  if (isFavoritePhrase(text)) {
+    favoritePhrases = favoritePhrases.filter(item => item.text !== text);
+  } else {
+    favoritePhrases.push({ text, category });
+  }
+  saveFavoritePhrases();
+  renderPhrases(currentPhraseCategory);
+  renderFavoritePhrases();
+}
+function usePhrase(text) {
+  const koreanOption = [...src.options].find(option => option.dataset.code === "ko");
+  if (koreanOption) src.value = koreanOption.value;
+  input.value = text;
+  output.value = "";
+  activeDirection = "outbound";
+  error.textContent = "";
+  status.textContent = `여행 회화 선택: ${text} — 번역 중입니다.`;
+  translateText("outbound");
+}
+function renderFavoritePhrases() {
+  favoritePhraseList.innerHTML = "";
+  emptyFavorites.hidden = favoritePhrases.length > 0;
+  clearFavoritesBtn.hidden = favoritePhrases.length === 0;
+  favoritePhrases.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "favorite-row";
+    const useButton = document.createElement("button");
+    useButton.type = "button";
+    useButton.className = "phrase-item favorite-use";
+    useButton.textContent = item.text;
+    useButton.addEventListener("click", () => usePhrase(item.text));
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "favorite-remove";
+    removeButton.textContent = "★";
+    removeButton.setAttribute("aria-label", `${item.text} 즐겨찾기 해제`);
+    removeButton.title = "즐겨찾기 해제";
+    removeButton.addEventListener("click", () => {
+      favoritePhrases = favoritePhrases.filter(saved => saved.text !== item.text);
+      saveFavoritePhrases();
+      renderPhrases(currentPhraseCategory);
+      renderFavoritePhrases();
+    });
+    row.append(useButton, removeButton);
+    favoritePhraseList.appendChild(row);
+  });
+}
+if (clearFavoritesBtn) {
+  clearFavoritesBtn.addEventListener("click", () => {
+    if (!favoritePhrases.length) return;
+    if (typeof window.confirm === "function" && !window.confirm("저장한 즐겨찾기 회화를 모두 삭제할까요?")) return;
+    favoritePhrases = [];
+    saveFavoritePhrases();
+    renderPhrases(currentPhraseCategory);
+    renderFavoritePhrases();
+  });
+}
+
+renderPhrases("hotel");
+renderFavoritePhrases();

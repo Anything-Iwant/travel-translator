@@ -28,6 +28,17 @@
     <button class="phrase-category" data-category="emergency" aria-pressed="false">🆘 긴급 상황</button>
   </div>
   <div id="phraseList" class="phrase-list" aria-live="polite"></div>
+
+  <div class="favorite-phrases">
+    <div class="favorite-heading">
+      <h3>⭐ 즐겨찾기 회화</h3>
+      <button id="clearFavoritesBtn" class="small-action" type="button">전체 삭제</button>
+    </div>
+    <p class="help">회화 문장의 ☆ 버튼을 누르면 이곳에 저장됩니다. 이 기기에 저장되어 다음에도 사용할 수 있습니다.</p>
+    <div id="favoritePhraseList" class="phrase-list favorites-list" aria-live="polite"></div>
+    <p id="emptyFavorites" class="empty-favorites">아직 저장한 문장이 없습니다.</p>
+  </div>
+
 </section>
 
 <section class="panel"><h2>말하고 번역하기</h2><button id="conversationModeBtn" class="secondary" aria-pressed="false">🗣️ 양방향 대화 모드: 꺼짐</button>
