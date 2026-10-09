@@ -333,6 +333,57 @@ function languageLabel(code) {
  return names[code] || "선택한 언어";
 }
 $("readBtn").addEventListener("click", speakTranslatedText);
+
+// 상대방에게 번역문을 전체 화면에 가깝게 확대해 보여주는 모드
+const showPartnerOverlay = $("showPartnerOverlay");
+const showPartnerText = $("showPartnerText");
+const showPartnerOriginal = $("showPartnerOriginal");
+let showPartnerFontSize = 0;
+let showPartnerPreviousFocus = null;
+function openShowPartner(text = output.value, original = input.value, locale = null) {
+  const phrase = String(text || "").trim();
+  if (!phrase) {
+    error.textContent = "먼저 문장을 번역하거나 긴급 문장을 선택해 주세요.";
+    return;
+  }
+  showPartnerPreviousFocus = document.activeElement;
+  showPartnerText.textContent = phrase;
+  showPartnerOriginal.textContent = String(original || "").trim();
+  showPartnerOverlay.dataset.speechLocale = locale || (activeDirection === "inbound" ? src.value : (dst.selectedOptions[0]?.dataset.speech || "en-US"));
+  showPartnerOriginal.hidden = !showPartnerOriginal.textContent;
+  showPartnerFontSize = 0;
+  showPartnerText.style.fontSize = "";
+  showPartnerOverlay.hidden = false;
+  document.body.style.overflow = "hidden";
+  $("closeShowPartnerBtn").focus();
+}
+function closeShowPartner() {
+  showPartnerOverlay.hidden = true;
+  document.body.style.overflow = "";
+  if (showPartnerPreviousFocus && typeof showPartnerPreviousFocus.focus === "function") showPartnerPreviousFocus.focus();
+}
+$("showPartnerBtn").addEventListener("click", () => openShowPartner());
+$("emergencyShowBtn").addEventListener("click", () => openShowPartner($("emergencyPhraseTranslated").textContent, $("emergencyPhraseKorean").textContent, currentEmergencyTranslation ? currentEmergencyLocale : "en-US"));
+$("closeShowPartnerBtn").addEventListener("click", closeShowPartner);
+$("closeShowPartnerBottomBtn").addEventListener("click", closeShowPartner);
+showPartnerOverlay.addEventListener("click", event => { if (event.target === showPartnerOverlay) closeShowPartner(); });
+document.addEventListener("keydown", event => { if (event.key === "Escape" && !showPartnerOverlay.hidden) closeShowPartner(); });
+$("smallerTextBtn").addEventListener("click", () => {
+  showPartnerFontSize = Math.max(-18, showPartnerFontSize - 6);
+  const base = Math.min(58, Math.max(34, window.innerWidth * 0.09));
+  showPartnerText.style.fontSize = `${Math.max(22, base + showPartnerFontSize)}px`;
+});
+$("largerTextBtn").addEventListener("click", () => {
+  showPartnerFontSize = Math.min(42, showPartnerFontSize + 6);
+  const base = Math.min(58, Math.max(34, window.innerWidth * 0.09));
+  showPartnerText.style.fontSize = `${Math.min(100, base + showPartnerFontSize)}px`;
+});
+$("showPartnerReadBtn").addEventListener("click", () => {
+  const phrase = showPartnerText.textContent.trim();
+  if (!phrase) return;
+  const locale = showPartnerOverlay.dataset.speechLocale || (activeDirection === "inbound" ? src.value : (dst.selectedOptions[0]?.dataset.speech || "en-US"));
+  speakOfflinePhrase(phrase, locale);
+});
 const HISTORY_STORAGE_KEY = "travelTranslatorHistoryV1";
 const HISTORY_LIMIT = 30;
 

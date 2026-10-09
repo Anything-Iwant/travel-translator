@@ -33,6 +33,7 @@
     <p id="emergencyPhraseKorean" class="emergency-phrase-korean"></p>
     <p id="emergencyPhraseTranslated" class="emergency-phrase-translated"></p>
     <button type="button" id="emergencyReadBtn" class="secondary">🔊 문장 읽기</button>
+    <button type="button" id="emergencyShowBtn" class="show-partner-btn">🔠 큰 글씨로 보여주기</button>
   </div>
 </section>
 
@@ -83,7 +84,20 @@
 <label class="field">인식한 문장<textarea id="recognized" rows="3" placeholder="말한 내용이 여기에 표시됩니다."></textarea></label>
 <button id="translateBtn" class="secondary">번역하기</button>
 <label class="field">번역 결과<textarea id="translated" rows="3" placeholder="번역 결과가 여기에 표시됩니다." readonly></textarea></label>
+<button id="showPartnerBtn" class="show-partner-btn">🔠 상대방에게 큰 글씨로 보여주기</button>
 <button id="readBtn" class="secondary">🔊 번역읽기</button><p id="error" class="error" role="status"></p></section>
 <section class="panel"><div class="history-head"><h2>번역 기록</h2><button id="clearHistoryBtn" class="textbtn">기록 지우기</button></div><ol id="history"><li class="empty">번역한 내용이 여기에 쌓입니다.</li></ol></section>
 <footer>번역하려면 인터넷 연결이 필요합니다. 음성 기능은 브라우저와 기기에 따라 다를 수 있습니다.</footer>
-</main><script src="./app.js" defer></script><script>if ("serviceWorker" in navigator && location.protocol === "https:") { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {})); }</script></body></html>
+</main>
+<div id="showPartnerOverlay" class="show-partner-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="showPartnerTitle">
+  <div class="show-partner-card">
+    <div class="show-partner-top"><h2 id="showPartnerTitle">상대방에게 보여주세요</h2><button type="button" id="closeShowPartnerBtn" class="show-close-btn" aria-label="닫기">✕</button></div>
+    <p id="showPartnerOriginal" class="show-partner-original"></p>
+    <div id="showPartnerText" class="show-partner-text" aria-live="polite"></div>
+    <div class="show-partner-controls"><button type="button" id="smallerTextBtn" class="secondary">가− 작게</button><button type="button" id="largerTextBtn" class="secondary">가＋ 크게</button></div>
+    <button type="button" id="showPartnerReadBtn" class="primary">🔊 문장 읽기</button>
+    <button type="button" id="closeShowPartnerBottomBtn" class="secondary">닫기</button>
+    <p class="show-partner-hint">화면을 상대방에게 보여주세요. 글자 크기는 버튼으로 조절할 수 있어요.</p>
+  </div>
+</div>
+<script src="./app.js" defer></script><script>if ("serviceWorker" in navigator && location.protocol === "https:") { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {})); }</script></body></html>

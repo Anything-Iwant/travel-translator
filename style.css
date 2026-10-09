@@ -61,3 +61,21 @@
 .emergency-phrase-translated{margin:6px 0 8px;font-size:clamp(22px,5vw,30px);font-weight:850;line-height:1.3;overflow-wrap:anywhere}
 .emergency-phrase-display .secondary{margin-top:0}
 @media(max-width:380px){.emergency-actions{grid-template-columns:1fr}.emergency-number-card strong{font-size:27px}}
+
+
+/* 상대방에게 번역문을 크게 보여주는 화면 */
+.show-partner-btn{width:100%;min-height:50px;margin-top:10px;padding:11px 14px;border:1px solid #8bb9db;border-radius:13px;background:#eaf5ff;color:#084f85;font-weight:800}
+.show-partner-btn:active{background:#d8ecfb}
+.show-partner-overlay{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:12px;background:rgba(8,22,36,.88);}
+.show-partner-overlay[hidden]{display:none}
+.show-partner-card{width:min(100%,620px);max-height:calc(100dvh - 24px);overflow:auto;padding:clamp(16px,4vw,26px);border-radius:22px;background:#fff;color:#172331;box-shadow:0 16px 55px #0005}
+.show-partner-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.show-partner-top h2{margin:0;font-size:17px}
+.show-close-btn{flex:0 0 42px;width:42px;height:42px;border:1px solid #dce5ed;border-radius:50%;background:#f5f8fb;color:#172331;font-size:20px}
+.show-partner-original{margin:18px 0 4px;text-align:center;color:#637386;font-size:14px;overflow-wrap:anywhere}
+.show-partner-text{display:flex;align-items:center;justify-content:center;min-height:32vh;padding:18px 4px;text-align:center;font-size:clamp(34px,9vw,58px);font-weight:850;line-height:1.3;letter-spacing:-.025em;overflow-wrap:anywhere;word-break:normal;white-space:pre-wrap}
+.show-partner-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.show-partner-controls .secondary{margin-top:0}
+.show-partner-card>.primary,.show-partner-card>#closeShowPartnerBottomBtn{margin-top:9px}
+.show-partner-hint{margin:12px 0 0;text-align:center;font-size:12px;color:#667789}
+@media(max-height:560px){.show-partner-card{max-height:calc(100dvh - 12px);padding:12px}.show-partner-text{min-height:20vh;padding:10px 4px;font-size:clamp(28px,7vw,46px)}.show-partner-hint{margin-top:7px}}
