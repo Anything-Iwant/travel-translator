@@ -122,6 +122,7 @@ async function translateText(direction = activeDirection) {
       ? "상대방의 말을 내 언어로 번역했어요."
       : "내 말을 상대방 언어로 번역했어요.";
     addHistory(text, output.value);
+    if (autoReadEnabled) setTimeout(() => speakTranslatedText(), 0);
   } catch (e) {
     error.textContent = e.message || "번역에 실패했어요. 인터넷 연결을 확인해 주세요.";
     status.textContent = "번역 실패";
@@ -130,6 +131,19 @@ async function translateText(direction = activeDirection) {
   }
 }
 $("translateBtn").addEventListener("click",translateText);
+let autoReadEnabled = false;
+const autoReadBtn = $("autoReadBtn");
+autoReadBtn.addEventListener("click", () => {
+  autoReadEnabled = !autoReadEnabled;
+  autoReadBtn.setAttribute("aria-pressed", String(autoReadEnabled));
+  autoReadBtn.textContent = autoReadEnabled
+    ? "🔊 자동 음성 읽기: 켜짐"
+    : "🔊 자동 음성 읽기: 꺼짐";
+  status.textContent = autoReadEnabled
+    ? "번역이 완료되면 자동으로 읽습니다. 기기의 음성 지원이 필요해요."
+    : "자동 음성 읽기를 껐어요.";
+});
+
 function speakTranslatedText() {
  error.textContent = "";
  const text = output.value.trim();
