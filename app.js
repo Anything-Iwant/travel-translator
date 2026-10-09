@@ -661,3 +661,77 @@ function speakOfflinePhrase(text, locale) {
 dst.addEventListener("change", renderOfflinePhrases);
 
 renderOfflinePhrases();
+
+// 긴급 상황 빠른 실행: 국가별 참고 번호와 미리 준비된 회화 문장을 표시합니다.
+const emergencyCountries = {
+  jp: { police: "110", ambulance: "119", note: "일본 기준 번호입니다. 경찰은 110, 구급·화재는 119입니다." },
+  us: { police: "911", ambulance: "911", note: "미국에서는 일반적인 긴급 상황에 911을 사용합니다." },
+  ca: { police: "911", ambulance: "911", note: "캐나다에서는 일반적인 긴급 상황에 911을 사용합니다." },
+  uk: { police: "999 / 112", ambulance: "999 / 112", note: "영국에서는 긴급 상황에 999 또는 112를 사용할 수 있습니다." },
+  eu: { police: "112", ambulance: "112", note: "EU 지역의 일반적인 긴급 번호는 112입니다. 국가별 예외나 추가 번호가 있을 수 있습니다." },
+  au: { police: "000", ambulance: "000", note: "호주의 주요 긴급 전화번호는 000입니다." },
+  nz: { police: "111", ambulance: "111", note: "뉴질랜드의 주요 긴급 전화번호는 111입니다." },
+  th: { police: "191", ambulance: "1669", note: "태국의 일반 경찰 번호는 191, 응급 의료 지원은 1669로 안내됩니다." },
+  vn: { police: "113", ambulance: "115", note: "베트남에서는 경찰 113, 구급 115로 안내됩니다." },
+  cn: { police: "110", ambulance: "120", note: "중국 본토 기준 번호입니다. 경찰은 110, 구급은 120입니다." },
+  sg: { police: "999", ambulance: "995", note: "싱가포르에서는 경찰 999, 구급·화재 긴급 상황은 995로 안내됩니다." },
+  my: { police: "999", ambulance: "999", note: "말레이시아의 통합 긴급 번호는 일반적으로 999입니다. 휴대전화에서는 112 안내도 확인하세요." },
+  ph: { police: "911", ambulance: "911", note: "필리핀의 통합 긴급 번호는 911입니다." },
+  in: { police: "112", ambulance: "112", note: "인도의 통합 긴급 번호는 112입니다." },
+  kr: { police: "112", ambulance: "119", note: "대한민국 기준 번호입니다. 경찰은 112, 구급·화재는 119입니다." }
+};
+const emergencyTranslations = {
+  help: { ko: "도와주세요!", en: "Please help me!", ja: "助けてください！", "zh-CN": "请帮帮我！", "zh-TW": "請幫幫我！", th: "ช่วยฉันด้วย!", es: "¡Ayúdeme, por favor!", fr: "Aidez-moi, s'il vous plaît !", de: "Bitte helfen Sie mir!", ru: "Помогите мне, пожалуйста!", vi: "Xin hãy giúp tôi!", id: "Tolong bantu saya!", it: "Mi aiuti, per favore!", pt: "Ajude-me, por favor!", "pt-BR": "Por favor, me ajude!" },
+  police: { ko: "경찰을 불러 주세요.", en: "Please call the police.", ja: "警察を呼んでください。", "zh-CN": "请叫警察。", "zh-TW": "請叫警察。", th: "กรุณาเรียกตำรวจ", es: "Llame a la policía, por favor.", fr: "Appelez la police, s'il vous plaît.", de: "Bitte rufen Sie die Polizei.", ru: "Вызовите полицию, пожалуйста.", vi: "Xin hãy gọi cảnh sát.", id: "Tolong panggil polisi.", it: "Chiami la polizia, per favore.", pt: "Chame a polícia, por favor.", "pt-BR": "Chame a polícia, por favor." },
+  ambulance: { ko: "구급차가 필요합니다.", en: "I need an ambulance.", ja: "救急車が必要です。", "zh-CN": "我需要救护车。", "zh-TW": "我需要救護車。", th: "ฉันต้องการรถพยาบาล", es: "Necesito una ambulancia.", fr: "J'ai besoin d'une ambulance.", de: "Ich brauche einen Krankenwagen.", ru: "Мне нужна скорая помощь.", vi: "Tôi cần xe cấp cứu.", id: "Saya membutuhkan ambulans.", it: "Ho bisogno di un'ambulanza.", pt: "Preciso de uma ambulância.", "pt-BR": "Preciso de uma ambulância." },
+  hospital: { ko: "병원에 가야 합니다.", en: "I need to go to a hospital.", ja: "病院に行く必要があります。", "zh-CN": "我需要去医院。", "zh-TW": "我需要去醫院。", th: "ฉันต้องไปโรงพยาบาล", es: "Necesito ir al hospital.", fr: "Je dois aller à l'hôpital.", de: "Ich muss ins Krankenhaus.", ru: "Мне нужно в больницу.", vi: "Tôi cần đến bệnh viện.", id: "Saya perlu pergi ke rumah sakit.", it: "Devo andare in ospedale.", pt: "Preciso ir ao hospital.", "pt-BR": "Preciso ir ao hospital." }
+};
+const emergencyCountrySelect = $("emergencyCountry");
+const emergencyPhraseDisplay = $("emergencyPhraseDisplay");
+let currentEmergencyTranslation = "";
+let currentEmergencyLocale = "en-US";
+function renderEmergencyCountry() {
+  const info = emergencyCountries[emergencyCountrySelect.value];
+  $("policeNumber").textContent = info ? info.police : "선택 필요";
+  $("ambulanceNumber").textContent = info ? info.ambulance : "선택 필요";
+  $("emergencyCountryNote").textContent = info
+    ? info.note + " 번호는 참고용이며, 연결이 되지 않으면 현지 공식 안내를 확인하세요."
+    : "여행 국가를 선택하면 해당 지역의 긴급 번호 참고 정보를 표시합니다. 실제 상황에서는 현지 공식 안내를 우선하세요.";
+}
+emergencyCountrySelect.addEventListener("change", renderEmergencyCountry);
+document.querySelectorAll("[data-emergency-phrase]").forEach(button => {
+  button.addEventListener("click", () => {
+    const key = button.dataset.emergencyPhrase;
+    const item = emergencyTranslations[key];
+    const language = dst.value;
+    const translated = item?.[language];
+    $("emergencyPhraseKorean").textContent = item.ko;
+    if (translated) {
+      currentEmergencyTranslation = translated;
+      currentEmergencyLocale = dst.selectedOptions[0]?.dataset.speech || language;
+      $("emergencyPhraseTranslated").textContent = translated;
+      $("emergencyPhraseDisplay").hidden = false;
+      output.value = translated;
+      input.value = item.ko;
+      status.textContent = "긴급 상황 문장을 표시했습니다. 오프라인에서도 미리 준비된 문장을 볼 수 있습니다.";
+      error.textContent = "";
+    } else {
+      currentEmergencyTranslation = "";
+      $("emergencyPhraseTranslated").textContent = "이 언어의 미리 저장된 긴급 문장은 없습니다. 아래 영어 문장을 보여주세요: " + (item.en || item.ko);
+      emergencyPhraseDisplay.hidden = false;
+      output.value = item.en || item.ko;
+      input.value = item.ko;
+      status.textContent = "현재 언어의 저장 문장이 없어 영어 문장을 표시했습니다.";
+    }
+  });
+});
+$("emergencyReadBtn").addEventListener("click", () => {
+  if (currentEmergencyTranslation) speakOfflinePhrase(currentEmergencyTranslation, currentEmergencyLocale);
+  else speakOfflinePhrase($("emergencyPhraseTranslated").textContent, "en-US");
+});
+renderEmergencyCountry();
+dst.addEventListener("change", () => {
+  emergencyPhraseDisplay.hidden = true;
+  currentEmergencyTranslation = "";
+});
+
