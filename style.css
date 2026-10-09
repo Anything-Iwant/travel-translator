@@ -40,29 +40,6 @@
 .offline-translated{font-size:15px;line-height:1.4;overflow-wrap:anywhere}
 
 
-/* 긴급 상황 빠른 실행 */
-.emergency-panel{border:1px solid #f0c5c1;background:linear-gradient(180deg,#fffafa,#fff 70%)}
-.emergency-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.emergency-title-row h2{margin:2px 0 0}
-.emergency-kicker{font-size:10px;font-weight:850;letter-spacing:.12em;color:#b42318}
-.emergency-mark{display:grid;place-items:center;width:40px;height:40px;flex:0 0 40px;border-radius:13px;background:#b42318;color:white;font-size:24px;font-weight:900}
-.emergency-intro{font-size:13px;color:#5c4850;margin:10px 0 14px}
-.emergency-number-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
-.emergency-number-card{padding:12px;border:1px solid #f1d5d2;border-radius:12px;background:#fff}
-.emergency-number-card span{display:block;color:#765d60;font-size:12px;font-weight:700}
-.emergency-number-card strong{display:block;color:#b42318;font-size:30px;line-height:1.25;letter-spacing:-.03em}
-.emergency-subtitle{font-size:14px;margin:18px 0 9px}
-.emergency-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.emergency-action{min-height:52px;padding:10px;border:1px solid #efc8c4;border-radius:12px;background:#fff;color:#8e201b;font-weight:750;text-align:left}
-.emergency-action:active{background:#fff0ef}
-.emergency-phrase-display{margin-top:12px;padding:13px;border:2px solid #b42318;border-radius:13px;background:#fff}
-.emergency-phrase-display[hidden]{display:none}
-.emergency-phrase-korean{margin:0;color:#5c6b7b;font-size:13px}
-.emergency-phrase-translated{margin:6px 0 8px;font-size:clamp(22px,5vw,30px);font-weight:850;line-height:1.3;overflow-wrap:anywhere}
-.emergency-phrase-display .secondary{margin-top:0}
-@media(max-width:380px){.emergency-actions{grid-template-columns:1fr}.emergency-number-card strong{font-size:27px}}
-
-
 /* 상대방에게 번역문을 크게 보여주는 화면 */
 .show-partner-btn{width:100%;min-height:50px;margin-top:10px;padding:11px 14px;border:1px solid #8bb9db;border-radius:13px;background:#eaf5ff;color:#084f85;font-weight:800}
 .show-partner-btn:active{background:#d8ecfb}
