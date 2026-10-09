@@ -30,11 +30,84 @@ async function translateText(){
  finally{$("translateBtn").disabled=false;}
 }
 $("translateBtn").addEventListener("click",translateText);
-$("readBtn").addEventListener("click",()=>{
- error.textContent="";if(!output.value.trim()){error.textContent="먼저 번역해 주세요.";return;}
- if(!("speechSynthesis"in window)||typeof SpeechSynthesisUtterance==="undefined"){error.textContent="이 브라우저에서는 음성 읽기를 지원하지 않아요. 삼성 갤럭시에서는 Chrome으로 열어 주세요.";return;}
- try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(output.value);u.lang=dst.selectedOptions[0].dataset.speech||"en-US";u.rate=.92;u.onerror=()=>{error.textContent="음성 읽기에 실패했어요. 휴대전화의 음량과 음성 서비스 설정을 확인해 주세요.";};speechSynthesis.speak(u);}catch(e){error.textContent="음성 읽기에 실패했어요. Chrome에서 다시 시도해 주세요.";}
-});
+function speakTranslatedText() {
+ error.textContent = "";
+ const text = output.value.trim();
+ if (!text) {
+   error.textContent = "먼저 문장을 번역해 주세요.";
+   return;
+ }
+ if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") {
+   error.textContent = "이 브라우저는 음성 읽기를 지원하지 않아요. 삼성 갤럭시에서는 Chrome으로 열어 주세요.";
+   return;
+ }
+
+ const targetLocale = dst.selectedOptions[0].dataset.speech || "en-US";
+ const targetBase = targetLocale.split("-")[0].toLowerCase();
+ const synth = window.speechSynthesis;
+
+ function startSpeaking() {
+   const voices = synth.getVoices ? synth.getVoices() : [];
+   // Prefer a voice in the selected language. A language-specific Android TTS voice
+   // may need to be installed in the phone's text-to-speech settings.
+   const voice = voices.find(v => (v.lang || "").toLowerCase() === targetLocale.toLowerCase())
+     || voices.find(v => (v.lang || "").toLowerCase().split("-")[0] === targetBase);
+
+   synth.cancel();
+   const utterance = new SpeechSynthesisUtterance(text);
+   utterance.lang = targetLocale;
+   utterance.rate = 0.9;
+   if (voice) utterance.voice = voice;
+
+   utterance.onstart = () => {
+     error.textContent = "";
+   };
+   utterance.onend = () => {
+     error.textContent = "";
+   };
+   utterance.onerror = (event) => {
+     const reason = event && event.error ? event.error : "";
+     if (!voice && targetBase !== "en") {
+       error.textContent = `${languageLabel(targetBase)} 음성 데이터가 휴대전화에 없거나 읽기 서비스에서 지원하지 않을 수 있어요. 아래의 '음성 데이터 설치' 안내를 따라 설정해 주세요.`;
+     } else {
+       error.textContent = "음성 읽기를 시작하지 못했어요. 휴대전화 음량과 텍스트 음성 변환(TTS) 설정을 확인해 주세요.";
+     }
+   };
+   synth.speak(utterance);
+
+   // Some mobile browsers expose voices asynchronously; report the likely cause
+   // instead of failing silently when no voice is installed for the selected language.
+   if (!voice && targetBase !== "en") {
+     error.textContent = `${languageLabel(targetBase)} 음성이 바로 선택되지 않았어요. 읽기가 안 되면 휴대전화에 해당 언어의 음성 데이터를 설치해 주세요.`;
+   }
+ }
+
+ // Android Chrome can populate its voice list asynchronously.
+ if (synth.getVoices().length === 0) {
+   let completed = false;
+   const onVoices = () => {
+     if (completed) return;
+     completed = true;
+     synth.removeEventListener("voiceschanged", onVoices);
+     startSpeaking();
+   };
+   synth.addEventListener("voiceschanged", onVoices);
+   // Avoid waiting indefinitely if this browser does not fire voiceschanged.
+   window.setTimeout(() => {
+     if (completed) return;
+     completed = true;
+     synth.removeEventListener("voiceschanged", onVoices);
+     startSpeaking();
+   }, 700);
+ } else {
+   startSpeaking();
+ }
+}
+function languageLabel(code) {
+ const names = {ko:"한국어",en:"영어",ja:"일본어",th:"태국어",zh:"중국어",es:"스페인어",fr:"프랑스어",de:"독일어"};
+ return names[code] || "선택한 언어";
+}
+$("readBtn").addEventListener("click", speakTranslatedText);
 function addHistory(a,b){const list=$("history");if(list.querySelector(".empty"))list.innerHTML="";const li=document.createElement("li"),one=document.createElement("div"),two=document.createElement("strong");one.textContent=a;two.textContent=b;li.append(one,document.createElement("br"),two);list.prepend(li);while(list.children.length>12)list.lastElementChild.remove();}
 $("clearHistoryBtn").addEventListener("click",()=>{$("history").innerHTML='<li class="empty">번역한 내용이 여기에 쌓입니다.</li>';});
 if(!window.isSecureContext)help.textContent="설치 기능은 HTTPS 주소에서 사용해 주세요.";
