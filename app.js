@@ -2,6 +2,23 @@ const $=id=>document.getElementById(id);
 const src=$("sourceLang"),dst=$("targetLang"),input=$("recognized"),output=$("translated");
 let installPrompt=null;
 const installBtn=$("installBtn"),help=$("installHelp"),error=$("error"),status=$("status");
+
+// 인터넷 연결 상태: navigator.onLine은 기기의 연결 여부를 알려주지만,
+// 실제 번역 서버 접속 가능 여부까지 보장하지는 않습니다.
+const networkStatus = $("networkStatus");
+function renderNetworkStatus() {
+  if (!networkStatus) return;
+  const online = navigator.onLine;
+  networkStatus.dataset.state = online ? "online" : "offline";
+  $("networkStatusTitle").textContent = online ? "인터넷 연결 상태: 온라인" : "인터넷 연결 끊김";
+  $("networkStatusDetail").textContent = online
+    ? "일반 번역을 사용할 수 있어요. 번역 서버 상태에 따라 실패할 수 있습니다."
+    : "저장된 오프라인 필수 문장은 사용할 수 있지만, 새 번역은 인터넷이 필요해요.";
+  $("networkStatusBadge").textContent = online ? "온라인" : "오프라인";
+}
+window.addEventListener("online", renderNetworkStatus);
+window.addEventListener("offline", renderNetworkStatus);
+renderNetworkStatus();
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;help.textContent="설치할 수 있어요. 버튼을 눌러 홈 화면에 추가하세요.";});
 window.addEventListener("appinstalled",()=>{installPrompt=null;help.textContent="설치 완료! 홈 화면에서 번역기를 실행하세요.";installBtn.textContent="✓ 설치 완료";installBtn.disabled=true;});
 installBtn.addEventListener("click",async()=>{

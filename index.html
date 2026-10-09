@@ -9,6 +9,11 @@
 <p>말하고 번역한 뒤, 언어를 바꿔 상대방의 대답도 번역해 보세요.</p>
 <button id="installBtn" class="install">＋ 바탕화면 바로가기 설치</button>
 <p id="installHelp" class="help" aria-live="polite">버튼을 누르면 설치 방법을 안내해 드려요.</p></header>
+<section id="networkStatus" class="network-status" data-state="online" role="status" aria-live="polite">
+  <span class="network-status-dot" aria-hidden="true"></span>
+  <div class="network-status-copy"><strong id="networkStatusTitle">인터넷 연결 확인 중</strong><span id="networkStatusDetail">연결 상태를 확인하고 있어요.</span></div>
+  <span id="networkStatusBadge" class="network-status-badge">확인 중</span>
+</section>
 <section class="panel emergency-panel" aria-labelledby="emergencyTitle">
   <div class="emergency-title-row"><div><span class="emergency-kicker">TRAVEL SAFETY</span><h2 id="emergencyTitle">🆘 긴급 상황 빠른 실행</h2></div><span class="emergency-mark" aria-hidden="true">!</span></div>
   <p class="emergency-intro">위급할 때 현지 긴급 연락처와 바로 보여줄 문장을 확인하세요. 아래 번호는 참고용이며, 실제 상황에서는 현지 안내와 공식 정보를 우선하세요.</p>

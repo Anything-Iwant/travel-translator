@@ -79,3 +79,17 @@
 .show-partner-card>.primary,.show-partner-card>#closeShowPartnerBottomBtn{margin-top:9px}
 .show-partner-hint{margin:12px 0 0;text-align:center;font-size:12px;color:#667789}
 @media(max-height:560px){.show-partner-card{max-height:calc(100dvh - 12px);padding:12px}.show-partner-text{min-height:20vh;padding:10px 4px;font-size:clamp(28px,7vw,46px)}.show-partner-hint{margin-top:7px}}
+
+
+/* 인터넷 연결 상태 안내 */
+.network-status{display:flex;align-items:center;gap:11px;margin:-8px 0 16px;padding:12px 13px;border:1px solid #b9dfc8;border-radius:14px;background:#f0fbf4;color:#1e5e38}
+.network-status-dot{width:11px;height:11px;flex:0 0 11px;border-radius:50%;background:#249653;box-shadow:0 0 0 4px #2496531c}
+.network-status-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
+.network-status-copy strong{font-size:13px;line-height:1.35}
+.network-status-copy span{font-size:11px;line-height:1.4;color:#4c6e59}
+.network-status-badge{flex:0 0 auto;padding:4px 8px;border-radius:999px;background:#d9f4e3;color:#1e6c3e;font-size:11px;font-weight:800}
+.network-status[data-state="offline"]{border-color:#f0c6a5;background:#fff7ed;color:#8a3d12}
+.network-status[data-state="offline"] .network-status-dot{background:#d97706;box-shadow:0 0 0 4px #d977061c}
+.network-status[data-state="offline"] .network-status-copy span{color:#8a5b3d}
+.network-status[data-state="offline"] .network-status-badge{background:#ffead5;color:#9a4b0b}
+@media(prefers-reduced-motion:no-preference){.network-status-dot{transition:background .2s ease,box-shadow .2s ease}}
