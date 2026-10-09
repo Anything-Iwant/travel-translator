@@ -1,0 +1,17 @@
+{
+  "id": "./",
+  "name": "여행 대화 번역기",
+  "short_name": "여행 번역기",
+  "description": "말하고 번역한 뒤, 언어를 바꿔 상대방의 대답도 번역해 보세요.",
+  "lang": "ko-KR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#1769aa",
+  "background_color": "#f3f7fb",
+  "icons": [
+    {"src":"./icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"./icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"}
+  ]
+}

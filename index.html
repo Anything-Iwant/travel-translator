@@ -1,77 +1,25 @@
 <!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#155eef">
-  <meta name="description" content="스마트폰에서 사용하는 여행 대화 번역기">
-  <title>여행 대화 번역기</title>
-  <link rel="stylesheet" href="./style.css">
-</head>
-<body>
-  <main class="app">
-    <header>
-      <div class="eyebrow">TRAVEL TALK</div>
-      <h1>여행 대화 번역기</h1>
-      <p>말하고 번역한 뒤, 언어를 바꿔 상대방의 대답도 번역해 보세요.</p>
-    </header>
-
-    <section class="panel languages">
-      <label>내가 말할 언어
-        <select id="sourceLanguage">
-          <option value="ko-KR" selected>한국어</option>
-          <option value="en-US">영어</option>
-          <option value="ja-JP">일본어</option>
-          <option value="th-TH">태국어</option>
-          <option value="zh-CN">중국어</option>
-          <option value="es-ES">스페인어</option>
-          <option value="fr-FR">프랑스어</option>
-          <option value="de-DE">독일어</option>
-        </select>
-      </label>
-      <button id="swap" class="swap" type="button" aria-label="언어 바꾸기">⇄</button>
-      <label>상대방 언어
-        <select id="targetLanguage">
-          <option value="ko-KR">한국어</option>
-          <option value="en-US" selected>영어</option>
-          <option value="ja-JP">일본어</option>
-          <option value="th-TH">태국어</option>
-          <option value="zh-CN">중국어</option>
-          <option value="es-ES">스페인어</option>
-          <option value="fr-FR">프랑스어</option>
-          <option value="de-DE">독일어</option>
-        </select>
-      </label>
-    </section>
-
-    <section class="panel talk">
-      <div class="talk-head">
-        <div>
-          <h2 id="promptTitle">한국어로 말해 보세요</h2>
-          <p id="hint">아래 버튼을 누르고 문장을 말하세요.</p>
-        </div>
-        <span id="status" class="status">준비</span>
-      </div>
-      <button id="listen" class="listen" type="button">
-        <span aria-hidden="true">🎙️</span><span id="listenText">말하기 시작</span>
-      </button>
-      <p class="note">인식이 끝나면 번역 결과가 표시됩니다. 상대방이 대답할 때는 언어 바꾸기(⇄)를 누르세요.</p>
-    </section>
-
-    <section class="panel conversation">
-      <div class="conversation-head">
-        <h2>대화 기록</h2>
-        <button id="clear" class="clear" type="button">지우기</button>
-      </div>
-      <div id="empty" class="empty">아직 대화가 없습니다.<br>말하기 버튼을 눌러 시작하세요.</div>
-      <div id="history" class="history"></div>
-    </section>
-
-    <footer>
-      <p>이 초기 버전은 브라우저 음성 인식 기능을 사용합니다. 지원 여부는 스마트폰과 브라우저에 따라 달라질 수 있습니다.</p>
-      <p>번역 결과는 참고용입니다. 긴급·의료·법률·결제 관련 대화는 반드시 재확인하세요.</p>
-    </footer>
-  </main>
-  <script src="./app.js"></script>
-</body>
-</html>
+<html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1769aa"><meta name="description" content="해외여행용 음성 대화 번역기">
+<link rel="manifest" href="./manifest.json"><link rel="apple-touch-icon" href="./icons/icon-192.png"><link rel="stylesheet" href="./style.css">
+<title>여행 대화 번역기</title></head><body>
+<main class="app">
+<header class="hero"><div class="app-icon">文A</div><h1>여행 대화 번역기</h1>
+<p>말하고 번역한 뒤, 언어를 바꿔 상대방의 대답도 번역해 보세요.</p>
+<button id="installBtn" class="install">＋ 바탕화면 바로가기 설치</button>
+<p id="installHelp" class="help" aria-live="polite">버튼을 누르면 설치 방법을 안내해 드려요.</p></header>
+<section class="panel"><h2>대화 언어</h2><div class="languages">
+<label>내가 말할 언어<select id="sourceLang">
+<option value="ko-KR" data-code="ko">한국어</option><option value="en-US" data-code="en">영어</option><option value="ja-JP" data-code="ja">일본어</option><option value="th-TH" data-code="th">태국어</option><option value="zh-CN" data-code="zh">중국어</option><option value="es-ES" data-code="es">스페인어</option><option value="fr-FR" data-code="fr">프랑스어</option><option value="de-DE" data-code="de">독일어</option></select></label>
+<button id="swapBtn" class="swap" aria-label="언어 바꾸기">⇄</button>
+<label>상대방 언어<select id="targetLang"><option value="en" data-speech="en-US">영어</option><option value="ko" data-speech="ko-KR">한국어</option><option value="ja" data-speech="ja-JP">일본어</option><option value="th" data-speech="th-TH">태국어</option><option value="zh" data-speech="zh-CN">중국어</option><option value="es" data-speech="es-ES">스페인어</option><option value="fr" data-speech="fr-FR">프랑스어</option><option value="de" data-speech="de-DE">독일어</option></select></label>
+</div></section>
+<section class="panel"><h2>말하고 번역하기</h2><button id="speakBtn" class="primary">🎙️ 말하기 시작</button><p id="status" class="help">말하기 시작을 누르고 문장을 말해 주세요.</p>
+<label class="field">인식한 문장<textarea id="recognized" rows="3" placeholder="말한 내용이 여기에 표시됩니다."></textarea></label>
+<button id="translateBtn" class="secondary">번역하기</button>
+<label class="field">번역 결과<textarea id="translated" rows="3" placeholder="번역 결과가 여기에 표시됩니다." readonly></textarea></label>
+<button id="readBtn" class="secondary">🔊 번역읽기</button><p id="error" class="error" role="status"></p></section>
+<section class="panel"><div class="history-head"><h2>번역 기록</h2><button id="clearHistoryBtn" class="textbtn">기록 지우기</button></div><ol id="history"><li class="empty">번역한 내용이 여기에 쌓입니다.</li></ol></section>
+<footer>번역하려면 인터넷 연결이 필요합니다. 음성 기능은 브라우저와 기기에 따라 다를 수 있습니다.</footer>
+</main><script src="./app.js" defer></script></body></html>
