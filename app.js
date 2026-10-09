@@ -30,6 +30,9 @@ installBtn.addEventListener("click",async()=>{
 $("swapBtn").addEventListener("click",()=>{const oldSrc=src.value,oldDst=dst.value,srcCode=src.selectedOptions[0].dataset.code;const reverseSrc=[...src.options].find(o=>(o.dataset.code||o.value)===oldDst);const reverseDst=[...dst.options].find(o=>o.value===srcCode);if(reverseSrc&&reverseDst){src.value=reverseSrc.value;dst.value=reverseDst.value;}output.value="";error.textContent="";});
 let conversationMode = false;
 let activeDirection = "outbound";
+let activeRecognition = null;
+let isSpeakingTranslation = false;
+let conversationTurns = [];
 
 const conversationModeBtn = $("conversationModeBtn");
 const partnerSpeakBtn = $("partnerSpeakBtn");
@@ -46,8 +49,11 @@ conversationModeBtn.addEventListener("click", () => {
     ? "내가 말하기는 내 언어 → 상대방 언어, 상대방 말하기는 상대방 언어 → 내 언어로 번역합니다."
     : "켜면 상대방이 외국어로 말할 때도 내 언어로 번역할 수 있어요.";
   status.textContent = conversationMode
-    ? "아래에서 말하는 사람에 맞는 버튼을 선택해 주세요."
+    ? "먼저 ‘내가 말하기’를 눌러 말해 주세요. 번역 후 다음 차례를 안내합니다."
     : "내가 말하기를 누르고 문장을 말해 주세요.";
+  $("conversationNextTurn").textContent = conversationMode
+    ? "다음 차례: 나 — ‘내가 말하기’를 눌러 시작하세요."
+    : "대화 모드를 켜면 다음 차례를 안내해 드려요.";
   activeDirection = "outbound";
 });
 
@@ -56,14 +62,23 @@ partnerSpeakBtn.addEventListener("click", () => startListening("inbound"));
 
 function startListening(direction) {
   error.textContent = "";
+  if (isSpeakingTranslation || ("speechSynthesis" in window && window.speechSynthesis.speaking)) {
+    status.textContent = "번역 음성이 끝난 뒤 마이크를 눌러 주세요.";
+    return;
+  }
+  if (activeRecognition) {
+    try { activeRecognition.abort(); } catch (_) {}
+    activeRecognition = null;
+  }
   activeDirection = direction;
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
-    error.textContent = "이 브라우저는 음성 인식을 지원하지 않아요. Android에서는 Chrome을 사용해 주세요.";
+    error.textContent = "이 브라우저는 음성 인식을 지원하지 않아요. Android에서는 Chrome을 사용해 주세요. 마이크 버튼 대신 문장을 직접 입력해도 됩니다.";
     return;
   }
 
   const rec = new SR();
+  activeRecognition = rec;
   rec.lang = direction === "inbound"
     ? (dst.selectedOptions[0].dataset.speech || dst.value)
     : src.value;
@@ -78,28 +93,95 @@ function startListening(direction) {
       ? "상대방의 말을 듣고 있어요. 상대방이 말하면 잠시 기다려 주세요."
       : "듣고 있어요. 문장을 말해 주세요.";
     activeButton.textContent = "🎙️ 듣는 중…";
+    activeButton.setAttribute("aria-pressed", "true");
   };
   rec.onresult = e => {
-    input.value = e.results[0][0].transcript;
+    const transcript = e.results && e.results[0] && e.results[0][0]
+      ? e.results[0][0].transcript.trim() : "";
+    if (!transcript) return;
+    input.value = transcript;
     status.textContent = "음성을 인식했어요. 번역 중입니다.";
     translateText(direction);
   };
   rec.onerror = e => {
-    error.textContent = e.error === "not-allowed"
-      ? "마이크 권한을 허용해 주세요."
-      : e.error === "no-speech"
-        ? "음성이 들리지 않았어요. 다시 말해 주세요."
-        : "음성 인식 오류가 발생했어요. 인터넷과 마이크 권한을 확인해 주세요.";
+    if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+      error.textContent = "마이크 권한이 차단되어 있어요. 브라우저 사이트 설정에서 마이크를 허용해 주세요.";
+    } else if (e.error === "no-speech") {
+      error.textContent = "음성이 들리지 않았어요. 주변 소음을 줄이고 다시 말해 주세요.";
+    } else if (e.error !== "aborted") {
+      error.textContent = "음성 인식 오류가 발생했어요. 인터넷 연결, 마이크 권한, 브라우저 지원 여부를 확인해 주세요.";
+    }
   };
   rec.onend = () => {
     activeButton.textContent = defaultText;
+    activeButton.setAttribute("aria-pressed", "false");
+    if (activeRecognition === rec) activeRecognition = null;
   };
   try {
     rec.start();
   } catch (e) {
-    error.textContent = "음성 인식이 이미 실행 중입니다. 잠시 후 다시 시도해 주세요.";
+    if (activeRecognition === rec) activeRecognition = null;
+    activeButton.textContent = defaultText;
+    activeButton.setAttribute("aria-pressed", "false");
+    error.textContent = "음성 인식을 시작하지 못했어요. 잠시 기다렸다가 다시 눌러 주세요.";
   }
 }
+
+function renderConversationTranscript() {
+  const list = $("conversationTranscript");
+  list.replaceChildren();
+  if (!conversationTurns.length) {
+    const empty = document.createElement("li");
+    empty.className = "conversation-empty";
+    empty.textContent = "번역한 대화가 여기에 차례대로 표시됩니다.";
+    list.appendChild(empty);
+    return;
+  }
+  conversationTurns.forEach(turn => {
+    const item = document.createElement("li");
+    item.className = `conversation-turn ${turn.direction === "inbound" ? "incoming" : "outgoing"}`;
+    const heading = document.createElement("div");
+    heading.className = "conversation-turn-heading";
+    heading.textContent = turn.direction === "inbound" ? "상대방 → 나" : "나 → 상대방";
+    const original = document.createElement("p");
+    original.className = "conversation-turn-original";
+    original.textContent = turn.original;
+    const translated = document.createElement("p");
+    translated.className = "conversation-turn-translated";
+    translated.textContent = turn.translated;
+    const meta = document.createElement("div");
+    meta.className = "conversation-turn-meta";
+    meta.textContent = `${turn.fromLabel} → ${turn.toLabel} · ${turn.time}`;
+    item.append(heading, original, translated, meta);
+    list.appendChild(item);
+  });
+  list.scrollTop = list.scrollHeight;
+}
+
+function addConversationTurn(original, translated, direction) {
+  const fromLabel = direction === "inbound" ? dst.selectedOptions[0]?.textContent : src.selectedOptions[0]?.textContent;
+  const toLabel = direction === "inbound" ? src.selectedOptions[0]?.textContent : dst.selectedOptions[0]?.textContent;
+  conversationTurns.push({
+    original, translated, direction,
+    fromLabel: (fromLabel || "원문").trim(),
+    toLabel: (toLabel || "번역").trim(),
+    time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+  });
+  if (conversationTurns.length > 50) conversationTurns.shift();
+  renderConversationTranscript();
+  if (conversationMode) {
+    const next = direction === "inbound" ? "나" : "상대방";
+    $("conversationNextTurn").textContent = `다음 차례: ${next} — ${next === "나" ? "‘내가 말하기’를 눌러 주세요." : "‘상대방 말하기’를 눌러 주세요."}`;
+  }
+}
+
+$("clearConversationBtn").addEventListener("click", () => {
+  conversationTurns = [];
+  renderConversationTranscript();
+  $("conversationNextTurn").textContent = conversationMode
+    ? "다음 차례: 나 — ‘내가 말하기’를 눌러 시작하세요."
+    : "대화 모드를 켜면 다음 차례를 안내해 드려요.";
+});
 function decodeEntities(s){const t=document.createElement("textarea");t.innerHTML=s;return t.value;}
 async function translateText(direction = activeDirection) {
   error.textContent = "";
@@ -118,6 +200,7 @@ async function translateText(direction = activeDirection) {
   if (from === to) {
     output.value = text;
     addHistory(text, text);
+    addConversationTurn(text, text, direction);
     status.textContent = "두 언어가 같아서 원문을 표시했어요.";
     return;
   }
@@ -139,6 +222,7 @@ async function translateText(direction = activeDirection) {
       ? "상대방의 말을 내 언어로 번역했어요."
       : "내 말을 상대방 언어로 번역했어요.";
     addHistory(text, output.value);
+    addConversationTurn(text, output.value, direction);
     if (autoReadEnabled) setTimeout(() => speakTranslatedText(), 0);
   } catch (e) {
     error.textContent = e.message || "번역에 실패했어요. 인터넷 연결을 확인해 주세요.";
@@ -274,6 +358,10 @@ autoReadBtn.addEventListener("click", () => {
 
 function speakTranslatedText() {
  error.textContent = "";
+ if (activeRecognition) {
+   try { activeRecognition.abort(); } catch (_) {}
+   activeRecognition = null;
+ }
  const text = output.value.trim();
  if (!text) {
    error.textContent = "먼저 문장을 번역해 주세요.";
@@ -296,18 +384,30 @@ function speakTranslatedText() {
      || voices.find(v => (v.lang || "").toLowerCase().split("-")[0] === targetBase);
 
    synth.cancel();
+   isSpeakingTranslation = false;
    const utterance = new SpeechSynthesisUtterance(text);
    utterance.lang = targetLocale;
    utterance.rate = 0.9;
    if (voice) utterance.voice = voice;
 
    utterance.onstart = () => {
+     isSpeakingTranslation = true;
      error.textContent = "";
+     status.textContent = "번역 음성을 재생 중이에요. 재생이 끝나면 다음 사람이 말하면 됩니다.";
    };
    utterance.onend = () => {
+     isSpeakingTranslation = false;
      error.textContent = "";
+     if (conversationMode) {
+       const next = activeDirection === "inbound" ? "나" : "상대방";
+       $("conversationNextTurn").textContent = `다음 차례: ${next} — ${next === "나" ? "‘내가 말하기’를 눌러 주세요." : "‘상대방 말하기’를 눌러 주세요."}`;
+       status.textContent = `번역 음성 재생 완료. 이제 ${next}의 차례예요.`;
+     } else {
+       status.textContent = "번역 음성 재생을 마쳤어요.";
+     }
    };
    utterance.onerror = (event) => {
+     isSpeakingTranslation = false;
      const reason = event && event.error ? event.error : "";
      if (!voice && targetBase !== "en") {
        error.textContent = `${languageLabel(targetBase)} 음성 데이터가 휴대전화에 없거나 읽기 서비스에서 지원하지 않을 수 있어요. 아래의 '음성 데이터 설치' 안내를 따라 설정해 주세요.`;

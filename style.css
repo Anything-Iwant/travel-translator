@@ -96,3 +96,19 @@
 
 /* 여행 국가 빠른 설정 */
 .travel-preset-label{display:block;margin:0 0 2px;color:#294b66}.travel-preset-label select{border-color:#a9cce5;background:#f5fbff;font-weight:650}.travel-preset-label select:focus{outline:3px solid #1769aa33;outline-offset:1px}#travelPresetNote{margin:7px 0 13px}
+
+
+/* 양방향 대화 흐름 */
+.conversation-transcript{margin-top:15px;padding:13px;border:1px solid #dce7ef;border-radius:14px;background:#f8fbfe}
+.conversation-transcript-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.conversation-transcript-heading h3{margin:0;font-size:15px}
+.conversation-next-turn{margin:10px 0 0;padding:9px 11px;border-radius:10px;background:#eaf5ff;color:#0d4f87;font-size:13px;font-weight:750}
+.conversation-transcript-list{display:flex;flex-direction:column;gap:9px;max-height:320px;overflow:auto;margin:10px 0 0;padding:0;list-style:none}
+.conversation-transcript-list .conversation-empty{padding:12px 4px;border:0;color:#748293;font-size:13px;text-align:center}
+.conversation-turn{max-width:94%;padding:10px 12px;border:1px solid #dce5ed;border-radius:12px;background:#fff;overflow-wrap:anywhere}
+.conversation-turn.outgoing{align-self:flex-end;border-color:#b8d9f1;background:#edf7ff}
+.conversation-turn.incoming{align-self:flex-start;border-color:#d8e7d8;background:#f1faf1}
+.conversation-turn-heading{font-size:11px;font-weight:850;color:#4d6478}
+.conversation-turn-original{margin:6px 0 0;font-size:14px;font-weight:700;white-space:pre-wrap}
+.conversation-turn-translated{margin:5px 0 0;font-size:15px;white-space:pre-wrap}
+.conversation-turn-meta{margin-top:7px;font-size:10px;color:#7a8795}

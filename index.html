@@ -92,7 +92,12 @@
 </section>
 
 <section class="panel"><h2>말하고 번역하기</h2><button id="conversationModeBtn" class="secondary" aria-pressed="false">🗣️ 양방향 대화 모드: 꺼짐</button>
-<button id="autoReadBtn" class="secondary" aria-pressed="false">🔊 자동 음성 읽기: 꺼짐</button><p id="conversationHelp" class="help">켜면 상대방이 외국어로 말할 때도 바로 한국어 등 내 언어로 번역할 수 있어요.</p><button id="speakBtn" class="primary">🎙️ 내가 말하기</button><button id="partnerSpeakBtn" class="secondary" hidden>🎙️ 상대방 말하기</button><p id="status" class="help">내가 말하기를 누르고 문장을 말해 주세요.</p>
+<button id="autoReadBtn" class="secondary" aria-pressed="false">🔊 자동 음성 읽기: 꺼짐</button><p id="conversationHelp" class="help">켜면 상대방이 외국어로 말할 때도 바로 한국어 등 내 언어로 번역할 수 있어요.</p><button id="speakBtn" class="primary">🎙️ 내가 말하기</button><button id="partnerSpeakBtn" class="secondary" hidden>🎙️ 상대방 말하기</button><p id="status" class="help" aria-live="polite">내가 말하기를 누르고 문장을 말해 주세요.</p>
+<div class="conversation-transcript" aria-labelledby="conversationTranscriptTitle">
+  <div class="conversation-transcript-heading"><h3 id="conversationTranscriptTitle">💬 이번 대화</h3><button type="button" id="clearConversationBtn" class="small-action">대화 지우기</button></div>
+  <p id="conversationNextTurn" class="conversation-next-turn" aria-live="polite">대화 모드를 켜면 다음 차례를 안내해 드려요.</p>
+  <ol id="conversationTranscript" class="conversation-transcript-list" aria-live="polite"><li class="conversation-empty">번역한 대화가 여기에 차례대로 표시됩니다.</li></ol>
+</div>
 <label class="field">인식한 문장<textarea id="recognized" rows="3" placeholder="말한 내용이 여기에 표시됩니다."></textarea></label>
 <button id="translateBtn" class="secondary">번역하기</button>
 <label class="field">번역 결과<textarea id="translated" rows="3" placeholder="번역 결과가 여기에 표시됩니다." readonly></textarea></label>
