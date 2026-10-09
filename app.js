@@ -551,7 +551,7 @@ $("showPartnerReadBtn").addEventListener("click", () => {
   const phrase = showPartnerText.textContent.trim();
   if (!phrase) return;
   const locale = showPartnerOverlay.dataset.speechLocale || (activeDirection === "inbound" ? src.value : (dst.selectedOptions[0]?.dataset.speech || "en-US"));
-  speakOfflinePhrase(phrase, locale);
+  speakText(phrase, locale);
 });
 const HISTORY_STORAGE_KEY = "travelTranslatorHistoryV1";
 const HISTORY_LIMIT = 30;
@@ -663,7 +663,7 @@ if(!window.isSecureContext)help.textContent="설치 기능은 HTTPS 주소에서
 renderTranslationHistory();
 
 
-function speakOfflinePhrase(text, locale) {
+function speakText(text, locale) {
   if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") {
     status.textContent = "문장은 표시했지만 이 브라우저는 음성 읽기를 지원하지 않습니다.";
     return;

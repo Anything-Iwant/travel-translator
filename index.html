@@ -53,4 +53,4 @@
     <p class="show-partner-hint">화면을 상대방에게 보여주세요. 글자 크기는 버튼으로 조절할 수 있어요.</p>
   </div>
 </div>
-<script src="./app.js" defer></script><script>if ("serviceWorker" in navigator && location.protocol === "https:") { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {})); }</script></body></html>
+<script src="./app.js" defer></script><script>if ("serviceWorker" in navigator && location.protocol === "https:") { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").then(registration => registration.update()).catch(() => {})); }</script></body></html>
