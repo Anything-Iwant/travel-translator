@@ -19,13 +19,79 @@ function renderNetworkStatus() {
 window.addEventListener("online", renderNetworkStatus);
 window.addEventListener("offline", renderNetworkStatus);
 renderNetworkStatus();
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;help.textContent="설치할 수 있어요. 버튼을 눌러 홈 화면에 추가하세요.";});
-window.addEventListener("appinstalled",()=>{installPrompt=null;help.textContent="설치 완료! 홈 화면에서 번역기를 실행하세요.";installBtn.textContent="✓ 설치 완료";installBtn.disabled=true;});
-installBtn.addEventListener("click",async()=>{
- error.textContent="";
- if(installPrompt){installPrompt.prompt();const choice=await installPrompt.userChoice;help.textContent=choice.outcome==="accepted"?"설치를 진행했어요. 홈 화면에서 아이콘을 확인해 주세요.":"설치가 취소됐어요. 원할 때 다시 눌러 주세요.";installPrompt=null;return;}
- if(/; wv\)|\bwv\b|NAVER\(inapp|Naver.*InApp/i.test(navigator.userAgent)){help.textContent="네이버 카페 안에서는 설치가 제한될 수 있어요. 메뉴(⋮)에서 'Chrome에서 열기'를 선택한 뒤 다시 눌러 주세요.";return;}
- help.textContent="브라우저 메뉴(⋮)에서 '홈 화면에 추가' 또는 '앱 설치'를 선택해 주세요. 브라우저가 아이콘 추가를 직접 승인해야 해요.";
+function isInstalledApp() {
+  return window.matchMedia("(display-mode: standalone)").matches ||
+    window.matchMedia("(display-mode: window-controls-overlay)").matches ||
+    navigator.standalone === true;
+}
+function desktopInstallHelp() {
+  const ua = navigator.userAgent;
+  if (/Edg\//i.test(ua)) {
+    return "PC의 Microsoft Edge에서 설치하려면 오른쪽 위 메뉴(⋯) → 앱 → '이 사이트를 앱으로 설치'를 선택하세요. 설치 항목이 안 보이면 주소창 오른쪽의 설치 아이콘도 확인해 주세요.";
+  }
+  if (/Chrome\//i.test(ua) && !/Edg\//i.test(ua)) {
+    return "PC의 Chrome에서 설치하려면 주소창 오른쪽의 설치 아이콘을 눌러 보세요. 아이콘이 없다면 오른쪽 위 메뉴(⋮) → '전송, 저장 및 공유' → '페이지를 앱으로 설치' 또는 '앱 설치'를 선택하세요.";
+  }
+  if (/Safari/i.test(ua) && /Macintosh|Mac OS X/i.test(ua)) {
+    return "Mac의 Safari에서는 화면 맨 위 메뉴 막대에서 파일 → Dock에 추가를 선택하세요. 설치 메뉴가 없다면 Chrome 또는 Edge에서 이 페이지를 열어 설치할 수 있습니다.";
+  }
+  if (/Firefox\//i.test(ua)) {
+    return "PC의 Firefox는 이 앱의 설치 버튼을 통한 앱 설치를 지원하지 않을 수 있어요. Chrome 또는 Microsoft Edge에서 이 페이지를 열고 주소창의 설치 아이콘이나 브라우저 메뉴를 이용해 주세요.";
+  }
+  return "PC에서는 Chrome 또는 Microsoft Edge로 이 페이지를 여는 것이 가장 쉬워요. 주소창 오른쪽의 설치 아이콘을 누르거나, 브라우저 메뉴에서 '앱 설치' 또는 '페이지를 앱으로 설치'를 찾아 선택하세요.";
+}
+function showInstallHelp() {
+  if (isInstalledApp()) {
+    help.textContent = "이미 앱으로 설치되어 있어요. 바탕화면 또는 시작 메뉴의 '여행 번역기' 아이콘으로 실행할 수 있습니다.";
+    return;
+  }
+  if (/; wv\)|\bwv\b|NAVER\(inapp|Naver.*InApp/i.test(navigator.userAgent)) {
+    help.textContent = "현재 앱 안의 브라우저에서는 설치가 제한될 수 있어요. 메뉴에서 'Chrome에서 열기'를 선택한 뒤 설치 버튼을 다시 눌러 주세요.";
+    return;
+  }
+  const isDesktop = !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  help.textContent = isDesktop
+    ? desktopInstallHelp()
+    : "휴대전화 브라우저 메뉴에서 '홈 화면에 추가' 또는 '앱 설치'를 선택하세요. Chrome에서는 설치 아이콘이 보일 수도 있어요.";
+}
+window.addEventListener("beforeinstallprompt", e => {
+  if (isInstalledApp()) return;
+  e.preventDefault();
+  installPrompt = e;
+  help.textContent = "설치할 수 있어요. 이 버튼을 누르면 브라우저 설치 창이 열립니다.";
+});
+window.addEventListener("appinstalled", () => {
+  installPrompt = null;
+  help.textContent = "설치 완료! 바탕화면 또는 앱 목록에서 '여행 번역기'를 실행하세요.";
+  installBtn.textContent = "✓ 설치 완료";
+  installBtn.disabled = true;
+});
+if (isInstalledApp()) {
+  installBtn.textContent = "✓ 앱으로 설치됨";
+  help.textContent = "이미 앱으로 설치되어 있어요. 바탕화면 또는 시작 메뉴의 아이콘으로 실행할 수 있습니다.";
+  installBtn.disabled = true;
+}
+installBtn.addEventListener("click", async () => {
+  error.textContent = "";
+  if (isInstalledApp()) {
+    showInstallHelp();
+    return;
+  }
+  if (installPrompt) {
+    try {
+      installPrompt.prompt();
+      const choice = await installPrompt.userChoice;
+      help.textContent = choice.outcome === "accepted"
+        ? "설치를 진행했어요. 바탕화면 또는 앱 목록에서 아이콘을 확인해 주세요."
+        : "설치가 취소됐어요. 원할 때 설치 버튼을 다시 누르거나 브라우저 메뉴에서 설치할 수 있어요.";
+    } catch (err) {
+      showInstallHelp();
+    } finally {
+      installPrompt = null;
+    }
+    return;
+  }
+  showInstallHelp();
 });
 $("swapBtn").addEventListener("click",()=>{const oldSrc=src.value,oldDst=dst.value,srcCode=src.selectedOptions[0].dataset.code;const reverseSrc=[...src.options].find(o=>(o.dataset.code||o.value)===oldDst);const reverseDst=[...dst.options].find(o=>o.value===srcCode);if(reverseSrc&&reverseDst){src.value=reverseSrc.value;dst.value=reverseDst.value;}output.value="";error.textContent="";});
 let conversationMode = false;

@@ -1,4 +1,4 @@
-const CACHE_NAME = "travel-translator-shell-v6";
+const CACHE_NAME = "travel-translator-shell-v7";
 const APP_FILES = [
   "./",
   "./index.html",
