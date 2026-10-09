@@ -533,3 +533,131 @@ if (clearFavoritesBtn) {
 renderPhrases("hotel");
 renderFavoritePhrases();
 renderTranslationHistory();
+
+
+// 오프라인 필수 회화: 아래 문장은 앱에 미리 포함되어 있어 번역 API 없이 표시할 수 있습니다.
+const offlinePhraseList = $("offlinePhraseList");
+const offlinePhraseNote = $("offlinePhraseNote");
+const offlinePhrases = [
+  {
+    ko: "안녕하세요.",
+    translations: {
+      en: "Hello.", ja: "こんにちは。", "zh-CN": "你好。", "zh-TW": "你好。",
+      th: "สวัสดี", es: "Hola.", fr: "Bonjour.", de: "Hallo.", ru: "Здравствуйте.",
+      vi: "Xin chào.", id: "Halo.", it: "Buongiorno.", pt: "Olá.", "pt-BR": "Olá."
+    }
+  },
+  {
+    ko: "감사합니다.",
+    translations: {
+      en: "Thank you.", ja: "ありがとうございます。", "zh-CN": "谢谢。", "zh-TW": "謝謝。",
+      th: "ขอบคุณ", es: "Gracias.", fr: "Merci.", de: "Danke.", ru: "Спасибо.",
+      vi: "Cảm ơn.", id: "Terima kasih.", it: "Grazie.", pt: "Obrigado/a.", "pt-BR": "Obrigado/a."
+    }
+  },
+  {
+    ko: "도와주세요!",
+    translations: {
+      en: "Please help me!", ja: "助けてください！", "zh-CN": "请帮帮我！", "zh-TW": "請幫幫我！",
+      th: "ช่วยด้วย", es: "¡Ayúdeme, por favor!", fr: "Aidez-moi, s'il vous plaît !",
+      de: "Bitte helfen Sie mir!", ru: "Помогите, пожалуйста!", vi: "Xin hãy giúp tôi!",
+      id: "Tolong bantu saya!", it: "Mi aiuti, per favore!", pt: "Ajude-me, por favor!", "pt-BR": "Me ajude, por favor!"
+    }
+  },
+  {
+    ko: "화장실이 어디에 있나요?",
+    translations: {
+      en: "Where is the restroom?", ja: "トイレはどこですか？", "zh-CN": "洗手间在哪里？", "zh-TW": "洗手間在哪裡？",
+      th: "ห้องน้ำอยู่ที่ไหน", es: "¿Dónde está el baño?", fr: "Où sont les toilettes?",
+      de: "Wo ist die Toilette?", ru: "Где туалет?", vi: "Nhà vệ sinh ở đâu?",
+      id: "Di mana toilet?", it: "Dov'è il bagno?", pt: "Onde fica a casa de banho?", "pt-BR": "Onde fica o banheiro?"
+    }
+  },
+  {
+    ko: "이거 얼마인가요?",
+    translations: {
+      en: "How much is this?", ja: "これはいくらですか？", "zh-CN": "这个多少钱？", "zh-TW": "這個多少錢？",
+      th: "อันนี้ราคาเท่าไหร่", es: "¿Cuánto cuesta esto?", fr: "Combien ça coûte ?",
+      de: "Wie viel kostet das?", ru: "Сколько это стоит?", vi: "Cái này giá bao nhiêu?",
+      id: "Berapa harga ini?", it: "Quanto costa questo?", pt: "Quanto custa isto?", "pt-BR": "Quanto custa isso?"
+    }
+  },
+  {
+    ko: "맵지 않게 해 주세요.",
+    translations: {
+      en: "Please make it not spicy.", ja: "辛くしないでください。", "zh-CN": "请不要做辣。", "zh-TW": "請不要做辣。",
+      th: "กรุณาทำแบบไม่เผ็ด", es: "Por favor, que no sea picante.", fr: "Pas épicé, s'il vous plaît.",
+      de: "Bitte nicht scharf.", ru: "Пожалуйста, не остро.", vi: "Xin đừng làm cay.",
+      id: "Tolong jangan pedas.", it: "Non piccante, per favore.", pt: "Sem picante, por favor.", "pt-BR": "Sem pimenta, por favor."
+    }
+  },
+  {
+    ko: "경찰을 불러 주세요.",
+    translations: {
+      en: "Please call the police.", ja: "警察を呼んでください。", "zh-CN": "请叫警察。", "zh-TW": "請叫警察。",
+      th: "กรุณาเรียกตำรวจ", es: "Llame a la policía, por favor.", fr: "Appelez la police, s'il vous plaît.",
+      de: "Bitte rufen Sie die Polizei.", ru: "Вызовите полицию, пожалуйста.", vi: "Xin hãy gọi cảnh sát.",
+      id: "Tolong panggil polisi.", it: "Chiami la polizia, per favore.", pt: "Chame a polícia, por favor.", "pt-BR": "Chame a polícia, por favor."
+    }
+  }
+];
+const offlineSpeechLocales = {
+  en: "en-US", ja: "ja-JP", "zh-CN": "zh-CN", "zh-TW": "zh-TW",
+  th: "th-TH", es: "es-ES", fr: "fr-FR", de: "de-DE", ru: "ru-RU",
+  vi: "vi-VN", id: "id-ID", it: "it-IT", pt: "pt-PT", "pt-BR": "pt-BR"
+};
+function renderOfflinePhrases() {
+  if (!offlinePhraseList) return;
+  offlinePhraseList.innerHTML = "";
+  const language = dst.value;
+  const supported = offlinePhrases.filter(item => item.translations[language]);
+  if (!supported.length) {
+    offlinePhraseNote.textContent = "이 언어의 오프라인 문장은 아직 준비되지 않았습니다. 인터넷 연결 시 일반 번역 기능을 이용해 주세요.";
+    return;
+  }
+  offlinePhraseNote.textContent = "미리 저장된 문장 " + supported.length + "개 · 번역 API를 사용하지 않습니다.";
+  supported.forEach(item => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "phrase-item offline-item";
+    button.innerHTML = "";
+    const ko = document.createElement("span");
+    ko.className = "offline-ko";
+    ko.textContent = item.ko;
+    const translated = document.createElement("strong");
+    translated.className = "offline-translated";
+    translated.textContent = item.translations[language];
+    button.append(ko, translated);
+    button.addEventListener("click", () => {
+      input.value = item.ko;
+      output.value = item.translations[language];
+      activeDirection = "outbound";
+      const myOption = [...src.options].find(option => option.dataset.code === "ko");
+      if (myOption) src.value = myOption.value;
+      status.textContent = "오프라인 회화를 불러왔습니다. 인터넷 연결 없이 표시할 수 있어요.";
+      error.textContent = "";
+      speakOfflinePhrase(item.translations[language], offlineSpeechLocales[language] || dst.selectedOptions[0]?.dataset.speech || language);
+    });
+    offlinePhraseList.appendChild(button);
+  });
+}
+function speakOfflinePhrase(text, locale) {
+  if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") {
+    status.textContent = "문장은 표시했지만 이 브라우저는 음성 읽기를 지원하지 않습니다.";
+    return;
+  }
+  try {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = locale;
+    utterance.onerror = () => {
+      status.textContent = "문장은 표시했지만 이 언어의 음성은 기기에서 지원되지 않을 수 있습니다.";
+    };
+    window.speechSynthesis.speak(utterance);
+  } catch (e) {
+    status.textContent = "문장은 표시했지만 음성 읽기를 시작하지 못했습니다.";
+  }
+}
+dst.addEventListener("change", renderOfflinePhrases);
+
+renderOfflinePhrases();

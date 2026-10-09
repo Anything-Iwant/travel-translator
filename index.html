@@ -39,6 +39,16 @@
     <p id="emptyFavorites" class="empty-favorites">아직 저장한 문장이 없습니다.</p>
   </div>
 
+  <div class="offline-phrasebook">
+    <div class="favorite-heading">
+      <h3>📴 오프라인 필수 회화</h3>
+      <span class="offline-label">인터넷 없이 사용</span>
+    </div>
+    <p class="help">미리 저장된 짧은 문장입니다. 위에서 선택한 상대방 언어에 맞춰 표시됩니다. 문장을 누르면 번역 결과 칸에 표시하고 음성 읽기를 시도합니다.</p>
+    <div id="offlinePhraseList" class="phrase-list offline-list" aria-live="polite"></div>
+    <p id="offlinePhraseNote" class="empty-favorites"></p>
+  </div>
+
 </section>
 
 <section class="panel"><h2>말하고 번역하기</h2><button id="conversationModeBtn" class="secondary" aria-pressed="false">🗣️ 양방향 대화 모드: 꺼짐</button>
@@ -49,4 +59,4 @@
 <button id="readBtn" class="secondary">🔊 번역읽기</button><p id="error" class="error" role="status"></p></section>
 <section class="panel"><div class="history-head"><h2>번역 기록</h2><button id="clearHistoryBtn" class="textbtn">기록 지우기</button></div><ol id="history"><li class="empty">번역한 내용이 여기에 쌓입니다.</li></ol></section>
 <footer>번역하려면 인터넷 연결이 필요합니다. 음성 기능은 브라우저와 기기에 따라 다를 수 있습니다.</footer>
-</main><script src="./app.js" defer></script></body></html>
+</main><script src="./app.js" defer></script><script>if ("serviceWorker" in navigator && location.protocol === "https:") { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {})); }</script></body></html>
