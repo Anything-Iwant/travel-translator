@@ -93,3 +93,6 @@
 .network-status[data-state="offline"] .network-status-copy span{color:#8a5b3d}
 .network-status[data-state="offline"] .network-status-badge{background:#ffead5;color:#9a4b0b}
 @media(prefers-reduced-motion:no-preference){.network-status-dot{transition:background .2s ease,box-shadow .2s ease}}
+
+/* 여행 국가 빠른 설정 */
+.travel-preset-label{display:block;margin:0 0 2px;color:#294b66}.travel-preset-label select{border-color:#a9cce5;background:#f5fbff;font-weight:650}.travel-preset-label select:focus{outline:3px solid #1769aa33;outline-offset:1px}#travelPresetNote{margin:7px 0 13px}

@@ -755,6 +755,53 @@ const emergencyTranslations = {
   hospital: { ko: "병원에 가야 합니다.", en: "I need to go to a hospital.", ja: "病院に行く必要があります。", "zh-CN": "我需要去医院。", "zh-TW": "我需要去醫院。", th: "ฉันต้องไปโรงพยาบาล", es: "Necesito ir al hospital.", fr: "Je dois aller à l'hôpital.", de: "Ich muss ins Krankenhaus.", ru: "Мне нужно в больницу.", vi: "Tôi cần đến bệnh viện.", id: "Saya perlu pergi ke rumah sakit.", it: "Devo andare in ospedale.", pt: "Preciso ir ao hospital.", "pt-BR": "Preciso ir ao hospital." }
 };
 const emergencyCountrySelect = $("emergencyCountry");
+const travelCountryPreset = $("travelCountryPreset");
+const travelPresetNote = $("travelPresetNote");
+const travelPresetLanguages = {
+  jp: { target: "ja", label: "일본어" },
+  us: { target: "en", label: "영어" },
+  ca: { target: "en", label: "영어" },
+  uk: { target: "en", label: "영어" },
+  eu: { target: "en", label: "영어(기본 설정)" },
+  au: { target: "en", label: "영어" },
+  nz: { target: "en", label: "영어" },
+  th: { target: "th", label: "태국어" },
+  vn: { target: "vi", label: "베트남어" },
+  cn: { target: "zh-CN", label: "중국어(간체)" },
+  sg: { target: "en", label: "영어" },
+  my: { target: "ms", label: "말레이어" },
+  ph: { target: "tl", label: "필리핀어" },
+  in: { target: "hi", label: "힌디어" },
+  kr: { target: "ko", label: "한국어" }
+};
+function applyTravelCountryPreset(country, save = true) {
+  const preset = travelPresetLanguages[country];
+  if (!preset) {
+    if (travelPresetNote) travelPresetNote.textContent = "여행 국가를 고르면 상대방 언어와 긴급 연락처 국가를 함께 설정해요.";
+    return;
+  }
+  const targetOption = [...dst.options].find(option => option.value === preset.target);
+  if (targetOption) dst.value = preset.target;
+  if ([...emergencyCountrySelect.options].some(option => option.value === country)) {
+    emergencyCountrySelect.value = country;
+    renderEmergencyCountry();
+  }
+  if (travelPresetNote) {
+    const countryName = travelCountryPreset.selectedOptions[0]?.textContent.trim() || "선택한 국가";
+    travelPresetNote.textContent = `${countryName}에 맞춰 상대방 언어를 ${preset.label}(으)로 설정했어요. 필요하면 아래에서 직접 바꿀 수 있어요.`;
+  }
+  if (save) {
+    try { localStorage.setItem("travelTranslatorCountryPreset", country); } catch (_) {}
+  }
+}
+travelCountryPreset.addEventListener("change", () => applyTravelCountryPreset(travelCountryPreset.value));
+try {
+  const savedCountry = localStorage.getItem("travelTranslatorCountryPreset");
+  if (savedCountry && travelPresetLanguages[savedCountry]) {
+    travelCountryPreset.value = savedCountry;
+    applyTravelCountryPreset(savedCountry, false);
+  }
+} catch (_) {}
 const emergencyPhraseDisplay = $("emergencyPhraseDisplay");
 let currentEmergencyTranslation = "";
 let currentEmergencyLocale = "en-US";
