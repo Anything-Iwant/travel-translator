@@ -131,6 +131,102 @@ async function translateText(direction = activeDirection) {
   }
 }
 $("translateBtn").addEventListener("click",translateText);
+
+// 여행 필수 회화: 한국어 문장을 선택해 현재 상대방 언어로 번역합니다.
+const travelPhrases = {
+  hotel: [
+    ["예약했습니다.", "I have a reservation."],
+    ["체크인하고 싶습니다.", "I'd like to check in."],
+    ["체크아웃은 몇 시인가요?", "What time is check-out?"],
+    ["와이파이 비밀번호가 무엇인가요?", "What is the Wi-Fi password?"],
+    ["수건을 더 받을 수 있을까요?", "Could I get some more towels?"],
+    ["짐을 맡길 수 있을까요?", "Can I leave my luggage here?"]
+  ],
+  taxi: [
+    ["이 주소로 가 주세요.", "Please take me to this address."],
+    ["여기서 세워 주세요.", "Please stop here."],
+    ["요금은 얼마인가요?", "How much is the fare?"],
+    ["카드로 결제할 수 있나요?", "Can I pay by card?"],
+    ["공항까지 얼마나 걸리나요?", "How long does it take to get to the airport?"],
+    ["미터기를 켜 주세요.", "Please turn on the meter."]
+  ],
+  restaurant: [
+    ["두 명 자리 있나요?", "Do you have a table for two?"],
+    ["메뉴판을 주세요.", "Could I see the menu, please?"],
+    ["이 음식에 무엇이 들어가나요?", "What is in this dish?"],
+    ["맵지 않게 해 주세요.", "Please make it not spicy."],
+    ["물 좀 주세요.", "Could I have some water, please?"],
+    ["계산서 주세요.", "Could I have the bill, please?"]
+  ],
+  directions: [
+    ["화장실이 어디에 있나요?", "Where is the restroom?"],
+    ["이곳에 어떻게 가나요?", "How do I get there?"],
+    ["가장 가까운 지하철역이 어디인가요?", "Where is the nearest subway station?"],
+    ["걸어서 갈 수 있나요?", "Can I walk there?"],
+    ["여기서 얼마나 먼가요?", "How far is it from here?"],
+    ["길을 잃었어요. 도와주세요.", "I'm lost. Could you help me?"]
+  ],
+  shopping: [
+    ["이거 얼마인가요?", "How much is this?"],
+    ["다른 색상도 있나요?", "Do you have this in another color?"],
+    ["입어 봐도 되나요?", "Can I try this on?"],
+    ["조금 깎아 주실 수 있나요?", "Could you give me a discount?"],
+    ["이걸로 살게요.", "I'll take this one."],
+    ["면세가 가능한가요?", "Is this eligible for a tax refund?"]
+  ],
+  airport: [
+    ["체크인 카운터가 어디인가요?", "Where is the check-in counter?"],
+    ["탑승구가 어디인가요?", "Where is the boarding gate?"],
+    ["비행기가 지연됐나요?", "Is the flight delayed?"],
+    ["수하물이 나오지 않았어요.", "My luggage hasn't arrived."],
+    ["환승은 어디에서 하나요?", "Where do I transfer?"],
+    ["탑승권을 보여 드릴게요.", "I'll show you my boarding pass."]
+  ],
+  emergency: [
+    ["도와주세요!", "Please help me!"],
+    ["경찰을 불러 주세요.", "Please call the police."],
+    ["의사가 필요합니다.", "I need a doctor."],
+    ["가장 가까운 병원이 어디인가요?", "Where is the nearest hospital?"],
+    ["여권을 잃어버렸어요.", "I've lost my passport."],
+    ["한국 대사관에 연락하고 싶습니다.", "I'd like to contact the Korean embassy."]
+  ]
+};
+const phraseList = $("phraseList");
+const phraseCategoryButtons = [...document.querySelectorAll(".phrase-category")];
+const phraseCategoryNames = {
+  hotel: "호텔", taxi: "택시", restaurant: "식당", directions: "길 찾기",
+  shopping: "쇼핑", airport: "공항", emergency: "긴급 상황"
+};
+function renderPhrases(category) {
+  phraseList.innerHTML = "";
+  (travelPhrases[category] || []).forEach(([phrase]) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "phrase-item";
+    button.textContent = phrase;
+    button.addEventListener("click", () => {
+      const koreanOption = [...src.options].find(option => option.dataset.code === "ko");
+      if (koreanOption) src.value = koreanOption.value;
+      input.value = phrase;
+      output.value = "";
+      activeDirection = "outbound";
+      error.textContent = "";
+      status.textContent = `여행 회화 선택: ${phrase} — 번역 중입니다.`;
+      translateText("outbound");
+    });
+    phraseList.appendChild(button);
+  });
+  phraseCategoryButtons.forEach(button => {
+    const selected = button.dataset.category === category;
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+}
+phraseCategoryButtons.forEach(button => {
+  button.addEventListener("click", () => renderPhrases(button.dataset.category));
+});
+renderPhrases("hotel");
+
 let autoReadEnabled = false;
 const autoReadBtn = $("autoReadBtn");
 autoReadBtn.addEventListener("click", () => {
